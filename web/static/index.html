@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JurisprudenciaBot Colombia | Israel Duarte Carrasquilla & Google Drive</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Marked.js para renderizar Markdown de la IA -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- TOP NAVIGATION -->
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white text-xl">
+          <i class="fa-solid fa-scale-balanced"></i>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            JurisprudenciaBot
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r from-brand-500/20 to-purple-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
+              <i class="fa-solid fa-sparkles text-[10px] text-amber-400"></i> Asistente IA
+            </span>
+          </h1>
+          <p class="text-xs text-slate-400">Salas Especializadas • Multi-Formato (HTM, PDF, MD) • Google Drive</p>
+        </div>
+      </div>
+
+      <!-- Live User Badge & Drive Link -->
+      <div class="flex items-center space-x-3">
+        <div class="hidden sm:flex items-center space-x-2 text-xs px-3 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+          <i class="fa-brands fa-google text-indigo-400"></i>
+          <span class="font-mono text-slate-300">Israel.Duarte.Carrasquilla@gmail.com</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-400" title="Cuenta Vinculada"></span>
+        </div>
+
+        <a href="https://drive.google.com/drive/folders/1Wy9jIetIcQ4vw0R-IeafGC7-8GGDaaIZ?usp=sharing" target="_blank" id="drive-indicator" class="flex items-center space-x-2 text-xs px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition">
+          <i class="fa-brands fa-google-drive text-sm"></i>
+          <span class="font-medium">Abrir en Drive</span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+        </a>
+
+        <div id="bot-status-badge" class="flex items-center space-x-2 text-xs px-3 py-1.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="bot-status-text" class="font-semibold">Listo</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <div class="border-b border-slate-800/80 bg-slate-900/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-2">
+      <button onclick="switchTab('tab-ai')" id="btn-tab-ai" class="tab-btn active px-4 py-3 text-xs font-semibold text-brand-400 border-b-2 border-brand-500 flex items-center gap-2 transition">
+        <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Buscador Apoyado con IA
+      </button>
+      <button onclick="switchTab('tab-crawler')" id="btn-tab-crawler" class="tab-btn px-4 py-3 text-xs font-semibold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-2 transition">
+        <i class="fa-solid fa-robot text-brand-400"></i> Robot de Descarga Masiva
+      </button>
+      <button onclick="switchTab('tab-taxonomy')" id="btn-tab-taxonomy" class="tab-btn px-4 py-3 text-xs font-semibold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-2 transition">
+        <i class="fa-solid fa-folder-tree text-emerald-400"></i> Salas Especializadas en Drive
+      </button>
+      <button onclick="switchTab('tab-database')" id="btn-tab-database" class="tab-btn px-4 py-3 text-xs font-semibold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center gap-2 transition">
+        <i class="fa-solid fa-database text-cyan-400"></i> Repositorio (PDF • MD • HTM)
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- KPI STATS CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Card 1 -->
+      <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 hover:border-slate-700 transition shadow-sm">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
+          <span>Sentencias Indexadas</span>
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+            <i class="fa-solid fa-file-invoice text-sm"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-extrabold text-white" id="stat-total-sentencias">0</div>
+        <div class="mt-1 text-xs text-slate-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-check-circle text-emerald-400"></i> Cada una con copia HTM, PDF y MD
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 hover:border-slate-700 transition shadow-sm">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
+          <span>Drive Israel Duarte</span>
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <i class="fa-brands fa-google-drive text-sm"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-extrabold text-white" id="stat-total-drive">0</div>
+        <div class="mt-1 text-xs text-slate-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-cloud text-emerald-400"></i> Sincronización en la nube activa
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 hover:border-slate-700 transition shadow-sm">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
+          <span>Volumen Descargado</span>
+          <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <i class="fa-solid fa-hard-drive text-sm"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-extrabold text-white" id="stat-total-megabytes">0 MB</div>
+        <div class="mt-1 text-xs text-slate-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-file-pdf text-rose-400"></i> PDF + <i class="fa-brands fa-markdown text-sky-400 ml-1"></i> MD
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 hover:border-slate-700 transition shadow-sm">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
+          <span>Salas Especializadas</span>
+          <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+            <i class="fa-solid fa-layer-group text-sm"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-extrabold text-white">Casación Civil, Agraria & Laboral</div>
+        <div class="mt-1 text-xs text-purple-300 flex items-center gap-1.5">
+          <span>Estructura por competencias activada</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: BUSCADOR APOYADO CON INTELIGENCIA ARTIFICIAL (IA)        -->
+    <!-- ============================================================== -->
+    <div id="tab-content-ai" class="tab-content space-y-6">
+      
+      <!-- HERO SEARCH BOX -->
+      <div class="bg-gradient-to-b from-slate-900 to-slate-900/80 border border-indigo-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-16 -top-16 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-3xl mx-auto space-y-4 text-center">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+            <i class="fa-solid fa-brain text-amber-400"></i> Búsqueda Semántica & Razonamiento Jurídico IA
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Consulte la Jurisprudencia con Inteligencia Artificial
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400">
+            Realice preguntas en lenguaje natural sobre cualquier especialidad (Corte Constitucional, Casación Civil, Agraria, Laboral o Penal, y Juzgados de Familia). La IA analizará la jurisprudencia y redactará una síntesis jurídica con citas exactas.
+          </p>
+
+          <!-- Search Input Form -->
+          <div class="relative pt-2">
+            <div class="flex shadow-2xl rounded-2xl overflow-hidden border border-slate-700 bg-slate-950 focus-within:border-brand-500 transition">
+              <div class="pl-4 flex items-center text-slate-500">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </div>
+              <input type="text" id="ai-search-input" placeholder="Ej: ¿Cuáles son los requisitos para la pensión de sobrevivientes según la jurisprudencia?" class="w-full bg-transparent px-4 py-3.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
+              <button id="btn-ai-search" class="bg-gradient-to-r from-brand-600 via-indigo-600 to-purple-600 hover:from-brand-500 hover:to-purple-500 text-white font-semibold px-6 py-3.5 text-sm flex items-center gap-2 transition active:scale-95 flex-shrink-0">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Analizar con IA</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Suggested quick questions -->
+          <div class="flex flex-wrap items-center justify-center gap-2 pt-2 text-xs">
+            <span class="text-slate-500 font-medium">Sugerencias:</span>
+            <button onclick="setAiQuery('Requisitos para la pensión de sobrevivientes')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700/60">
+              Pensiones de Sobrevivientes
+            </button>
+            <button onclick="setAiQuery('Indemnización de perjuicios morales en responsabilidad médica juzgados civiles')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700/60">
+              Daño Moral en Casación Civil
+            </button>
+            <button onclick="setAiQuery('Custodia compartida y patria potestad de menores juzgados de familia')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700/60">
+              Custodia en Juzgados de Familia
+            </button>
+            <button onclick="setAiQuery('Estabilidad laboral reforzada por fuero de salud')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition border border-slate-700/60">
+              Estabilidad Laboral Reforzada
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI RESPONSE SECTION -->
+      <div id="ai-response-container" class="hidden space-y-5">
+        <!-- AI Synthesis Box -->
+        <div class="bg-slate-900 border border-indigo-500/30 rounded-2xl p-6 shadow-md space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-2 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
+              <i class="fa-solid fa-robot"></i> Dictamen y Síntesis Asistido por IA
+              <span id="ai-engine-badge" class="px-2 py-0.5 rounded-full text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Motor Jurídico</span>
+            </div>
+            <button onclick="copyAiResponse()" class="text-xs text-slate-400 hover:text-slate-200 transition flex items-center gap-1">
+              <i class="fa-regular fa-copy"></i> Copiar Dictamen
+            </button>
+          </div>
+
+          <!-- Markdown rendered content -->
+          <div id="ai-markdown-output" class="prose prose-invert max-w-none text-slate-200 text-sm leading-relaxed space-y-3 font-sans">
+            <!-- Rendered by marked.js -->
+          </div>
+        </div>
+
+        <!-- Providencias citadas en la respuesta -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+            <i class="fa-solid fa-book-bookmark text-brand-500"></i> Providencias Judiciales Citadas por la IA
+          </h3>
+          <div id="ai-sources-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Dynamically populated sources -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div id="ai-loading-box" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center space-y-4">
+        <div class="inline-flex w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 items-center justify-center text-2xl animate-bounce">
+          <i class="fa-solid fa-scale-balanced"></i>
+        </div>
+        <h3 class="text-base font-semibold text-white">Analizando Jurisprudencia & Precedentes...</h3>
+        <p class="text-xs text-slate-400 max-w-md mx-auto">
+          El motor de IA está examinando las providencias indexadas en las salas especializadas de su Google Drive, cotejando fallos y estructurando la síntesis jurídica.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: ROBOT DE DESCARGA MASIVA                                -->
+    <!-- ============================================================== -->
+    <div id="tab-content-crawler" class="tab-content hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- LEFT: PANEL DE CONTROL DE DESCARGA (5 COLS) -->
+        <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-robot text-brand-500"></i> Descarga Masiva a Google Drive
+              </h2>
+              <span class="text-xs text-slate-400">Rastreador Inteligente</span>
+            </div>
+
+            <!-- Selector de Corporación / Especialidad -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Entidad / Corporación</label>
+                <select id="select-corte" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-brand-500 transition">
+                  <option value="Todas las Entidades" selected>⚡ TODAS LAS ENTIDADES (Cortes, Salas Especiales, Superintendencias, Laudos, Senado & ICDP)</option>
+                  <option value="Corte Constitucional">Corte Constitucional (Sala Plena C/SU, Salas Tutela 1-9 y Autos Especiales A)</option>
+                  <option value="Corte Suprema de Justicia">Corte Suprema de Justicia (Casación Civil-Agraria, Laboral/Descongestión, Penal, Salas Especiales y Tutelas)</option>
+                  <option value="Consejo de Estado">Consejo de Estado (Sala Plena SUJ, Salas Especiales 1-26, Secciones 1 a 5 con Subsecciones y Consulta)</option>
+                  <option value="Secretaría del Senado">Secretaría del Senado (Leyes de la República por año, Códigos Nacionales y Reformas C.P.)</option>
+                  <option value="Superintendencias">Superintendencias (10 Superintendencias: Superservicios, Sociedades, SIC, Financiera, etc.)</option>
+                  <option value="Laudos Arbitrales">Laudos Arbitrales (Cámaras de Comercio: Bogotá CAC, Barranquilla CCBq, Medellín y Cali)</option>
+                  <option value="Tribunales Departamentales">Tribunales Departamentales (Superiores y Administrativos: Atlántico, Antioquia, Cundinamarca, Valle...)</option>
+                  <option value="Instituto Colombiano de Derecho Procesal (ICDP)">Instituto Colombiano de Derecho Procesal - ICDP (Conceptos Constitucionales, Doctrina y Compendios)</option>
+                </select>
+              </div>
+
+              <!-- Tipos de Sentencia -->
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Salas y Especialidades</label>
+                <div id="salas-checkboxes-container" class="grid grid-cols-2 gap-2 text-xs">
+                  <label class="flex items-center p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 cursor-pointer hover:bg-slate-800 transition">
+                    <input type="checkbox" value="C" checked class="form-checkbox text-brand-600 rounded bg-slate-900 border-slate-700 mr-2 focus:ring-0">
+                    <span class="font-medium text-slate-200">Sala Plena (C)</span>
+                  </label>
+                  <label class="flex items-center p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 cursor-pointer hover:bg-slate-800 transition">
+                    <input type="checkbox" value="T" checked class="form-checkbox text-brand-600 rounded bg-slate-900 border-slate-700 mr-2 focus:ring-0">
+                    <span class="font-medium text-slate-200">Salas de Tutela (T)</span>
+                  </label>
+                  <label class="flex items-center p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 cursor-pointer hover:bg-slate-800 transition">
+                    <input type="checkbox" value="SU" checked class="form-checkbox text-brand-600 rounded bg-slate-900 border-slate-700 mr-2 focus:ring-0">
+                    <span class="font-medium text-slate-200">Unificación (SU)</span>
+                  </label>
+                  <label class="flex items-center p-2.5 rounded-xl bg-slate-800/80 border border-slate-700/80 cursor-pointer hover:bg-slate-800 transition">
+                    <input type="checkbox" value="A" class="form-checkbox text-brand-600 rounded bg-slate-900 border-slate-700 mr-2 focus:ring-0">
+                    <span class="font-medium text-slate-200">Seguimiento (Autos A)</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Rango de Años -->
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Año Inicio</label>
+                  <input type="number" id="input-ano-inicio" value="1991" min="1991" max="2030" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500 font-mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Año Fin</label>
+                  <input type="number" id="input-ano-fin" value="2026" min="1991" max="2030" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-slate-100 focus:outline-none focus:border-brand-500 font-mono">
+                </div>
+              </div>
+
+              <!-- Programación Nocturna Automática -->
+              <div class="p-3 rounded-xl bg-purple-950/40 border border-purple-500/40 text-[11px] text-purple-200 flex items-start gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center flex-shrink-0 text-xs">
+                  <i class="fa-solid fa-moon"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-white text-[12px]">Legal Jurisprudence AI (El Juez de la IA) ⭐</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] bg-purple-500/30 text-purple-200 font-semibold border border-purple-500/40">2:00 AM Diaria</span>
+                  </div>
+                  <p class="mt-1 text-purple-300">Cada noche a las <b>02:00 AM</b>, el sistema ejecuta automáticamente la descarga masiva y sincronización continua de <b>todas las entidades (1991 a la fecha de hoy)</b> en Google Drive, con deduplicación y caché en memoria O(1).</p>
+                </div>
+              </div>
+
+              <!-- Recomendación de Años -->
+              <div class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/40 text-[11px] text-indigo-200 flex items-start gap-2">
+                <i class="fa-solid fa-circle-info text-indigo-400 mt-0.5 flex-shrink-0"></i>
+                <div>
+                  <span class="font-semibold text-white">Recomendación para descarga inmediata:</span><br>
+                  Seleccione años con jurisprudencia consolidada (ej. <b>2020 a 2024</b>). El año 2026 está en curso y la Corte Constitucional aún no ha cargado sentencias en su portal de relatoría.
+                </div>
+              </div>
+
+              <!-- Aviso de formatos -->
+              <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                <span class="text-indigo-300 font-semibold flex items-center gap-1">
+                  <i class="fa-solid fa-layer-group"></i> Formatos generados automáticamente:
+                </span>
+                <p>• <b>HTML / RTF:</b> Documento original de la corte.<br>
+                • <b>PDF:</b> Copia oficial formateada para impresión.<br>
+                • <b>Markdown (.md):</b> Texto estructurado para lectura con IA.<br>
+                • <b>JSON:</b> Ficha técnica estructurada.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Control Buttons -->
+          <div class="mt-6 pt-5 border-t border-slate-800 space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <button id="btn-start" class="w-full bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 transition active:scale-[0.98]">
+                <i class="fa-solid fa-play"></i> Iniciar Descarga
+              </button>
+              <button id="btn-stop" disabled class="w-full bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 font-semibold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:pointer-events-none active:scale-[0.98]">
+                <i class="fa-solid fa-stop"></i> Detener
+              </button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+              <button id="btn-pause" disabled class="w-full bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-white border border-amber-500/30 font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:pointer-events-none">
+                <i class="fa-solid fa-pause"></i> Pausar
+              </button>
+              <button id="btn-resume" disabled class="w-full bg-cyan-500/20 hover:bg-cyan-500 text-cyan-300 hover:text-white border border-cyan-500/30 font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:pointer-events-none">
+                <i class="fa-solid fa-forward"></i> Reanudar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: LIVE MONITOR & TERMINAL CONSOLE (7 COLS) -->
+        <div class="lg:col-span-7 flex flex-col space-y-4">
+
+          <!-- LIVE PROGRESS MONITOR CARD -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="relative flex h-2.5 w-2.5">
+                  <span id="progress-pulse-ring" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+                  <span id="progress-pulse-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500"></span>
+                </span>
+                <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Monitor de Progreso en Vivo</span>
+              </div>
+              <div id="progress-radicado-badge" class="px-2.5 py-1 rounded-lg bg-brand-500/10 text-brand-300 border border-brand-500/20 text-xs font-mono font-semibold">
+                Sondeando: <span id="progress-radicado" class="text-white">En espera</span>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+              <div id="progress-bar-fill" class="bg-gradient-to-r from-brand-500 via-indigo-500 to-emerald-400 h-2 rounded-full transition-all duration-300 w-0"></div>
+            </div>
+
+            <!-- Live Stats Grid -->
+            <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+              <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5">
+                <div class="text-[10px] uppercase font-semibold text-slate-400 flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-cloud-arrow-down text-emerald-400"></i> Descargadas
+                </div>
+                <div id="progress-descargadas" class="text-base font-extrabold text-emerald-400 mt-0.5">0</div>
+              </div>
+              <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5">
+                <div class="text-[10px] uppercase font-semibold text-slate-400 flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-folder-check text-indigo-400"></i> Ya en Drive
+                </div>
+                <div id="progress-existentes" class="text-base font-extrabold text-indigo-400 mt-0.5">0</div>
+              </div>
+              <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5">
+                <div class="text-[10px] uppercase font-semibold text-slate-400 flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-magnifying-glass text-slate-400"></i> Sondeadas
+                </div>
+                <div id="progress-exploradas" class="text-base font-extrabold text-slate-200 mt-0.5">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Terminal Output -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col h-[350px]">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+              <div class="flex items-center space-x-2">
+                <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                <span class="text-xs font-mono text-slate-400 ml-2">crawler-engine.log</span>
+              </div>
+              <button id="btn-clear-logs" class="text-xs text-slate-400 hover:text-slate-200 transition">
+                <i class="fa-solid fa-eraser"></i> Limpiar
+              </button>
+            </div>
+
+            <!-- Terminal Output Scrollable -->
+            <div id="terminal-logs" class="flex-1 bg-slate-950 rounded-xl p-4 font-mono text-xs overflow-y-auto space-y-1.5 border border-slate-800/80 scroll-smooth">
+              <div class="text-slate-500">// Robot listo para iniciar descarga masiva hacia la carpeta de Google Drive de Israel Duarte.</div>
+            </div>
+
+            <!-- Bottom status -->
+            <div class="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-compass animate-spin text-brand-400"></i>
+                <span id="current-task-status">Esperando instrucción...</span>
+              </span>
+              <span id="sync-notice" class="text-emerald-400 text-[11px] font-medium flex items-center gap-1">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Sincronización continua en Google Drive
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: SALAS ESPECIALIZADAS EN DRIVE                           -->
+    <!-- ============================================================== -->
+    <div id="tab-content-taxonomy" class="tab-content hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-folder-tree text-emerald-400"></i> Salas Especializadas en Google Drive
+            </h2>
+            <p class="text-xs text-slate-400">Carpetas clasificadas por Casación Civil, Agraria y Rural, Laboral, Penal, Secciones del Consejo de Estado y Juzgados</p>
+          </div>
+          <a href="https://drive.google.com/drive/folders/1Wy9jIetIcQ4vw0R-IeafGC7-8GGDaaIZ?usp=sharing" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition shadow-md">
+            <i class="fa-brands fa-google-drive"></i> Abrir Carpeta en Google Drive
+          </a>
+        </div>
+
+        <!-- Grid of Specialties -->
+        <div id="taxonomy-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: REPOSITORIO DE SENTENCIAS MULTI-FORMATO                 -->
+    <!-- ============================================================== -->
+    <div id="tab-content-database" class="tab-content hidden space-y-5">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-database text-brand-500"></i> Repositorio Multi-Formato en Google Drive
+            </h2>
+            <p class="text-xs text-slate-400">Descarga o visualización directa en formato PDF, Markdown (.md) y original (.htm)</p>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <div class="relative w-full sm:w-80">
+              <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+              <input type="text" id="input-search" placeholder="Buscar radicado, magistrado o tema..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 font-sans">
+            </div>
+            <button id="btn-refresh-table" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-xl text-xs border border-slate-700 transition" title="Recargar">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-950/60 uppercase text-[10px] tracking-wider text-slate-400 border-b border-slate-800 font-semibold">
+              <tr>
+                <th class="py-3 px-4">Providencia</th>
+                <th class="py-3 px-4">Año</th>
+                <th class="py-3 px-4">Magistrado Ponente</th>
+                <th class="py-3 px-4">Síntesis / Asunto</th>
+                <th class="py-3 px-4">Formatos en Drive</th>
+                <th class="py-3 px-4 text-right">Descargas & Ficha IA</th>
+              </tr>
+            </thead>
+            <tbody id="sentencias-tbody" class="divide-y divide-slate-800/60 font-sans">
+              <tr>
+                <td colspan="6" class="py-8 text-center text-slate-500">
+                  <i class="fa-solid fa-spinner animate-spin text-lg mb-2"></i>
+                  <p>Cargando sentencias descargadas...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-slate-800 bg-slate-950 py-4 text-center text-xs text-slate-500">
+    JurisprudenciaBot • Titular: Israel.Duarte.Carrasquilla@gmail.com • Multi-Formato: HTM, PDF, Markdown • Google Drive
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

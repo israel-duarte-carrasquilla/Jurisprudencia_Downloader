@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Databases & local persistent stores
+*.db
+*.sqlite
+*.sqlite3
+jurisprudencia.db
+
+# Virtual environments
+venv/
+.venv/
+env/
+virtualenv/
+
+# Environment variables & secrets
+.env
+.env.*
+token.json
+credentials.json
+
+# Scratch & test scripts
+test_*.py
+inspect_*.py
+debug_*.py
+check_*.py
+patch_index.py
+verify_taxonomy.py
+reset_from_scratch.py
+migrate_to_jurisprudencia.py
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
